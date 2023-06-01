@@ -1,18 +1,22 @@
-CC = x86_64-w64-mingw32-gcc
-CC_FLAGS = -Wall -Wextra -g
+CXX = x86_64-w64-mingw32-g++
+
+CXX_FLAGS = -Wall -Wextra -g
+LD_FLAGS = -static-libstdc++ \
+		   -static-libgcc \
+		   -static
 
 SRC_DIR = src
 BIN_DIR = ../bin
 OBJ_DIR = ../bin-int/Excalibur-Installer
 
-SOURCES = $(shell find $(SRC_DIR) -name '*.c')
-OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
+SOURCES = $(shell find $(SRC_DIR) -name '*.cpp')
+OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
 TARGET = $(BIN_DIR)/Excalibur-Installer.exe
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CC_FLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXX_FLAGS) -c $< -o $@ $(LD_FLAGS)
 $(TARGET): $(OBJECTS)
-	$(CC) $(CC_FLAGS) $< -o $@
+	$(CXX) $(CXX_FLAGS) $< -o $@ $(LD_FLAGS)
 
 $(OBJECTS): | $(OBJ_DIR)
 $(TARGET): | $(BIN_DIR)
