@@ -1,7 +1,7 @@
 CC = x86_64-w64-mingw32-gcc
 
 CC_FLAGS = -Wall -Wextra -g
-LD_FLAGS = -static-libgcc -static -lgdi32
+LD_FLAGS = -static-libgcc -static -lgdi32 -lole32 -lshell32 -luuid
 
 SRC_DIR = src
 BIN_DIR = ../bin
