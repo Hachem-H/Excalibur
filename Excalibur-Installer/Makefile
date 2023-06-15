@@ -11,6 +11,11 @@ SOURCES = $(shell find $(SRC_DIR) -name '*.c')
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 TARGET = $(BIN_DIR)/Excalibur-Installer.exe
+ATTACK =
+
+ifdef $(ATTACK)
+	CC_FLAGS += -DEX_ATTACK
+endif
 
 EXCALIBUR_RC = Excalibur-Installer.rc
 EXCALIBUR_OBJ = $(OBJ_DIR)/Excalibur-Installer.o

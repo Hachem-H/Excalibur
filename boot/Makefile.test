@@ -1,0 +1,10 @@
+BIN_DIR = ../bin
+
+.PHONY: boot emulate
+
+build:
+	mkdir -p $(BIN_DIR)
+	nasm -f bin boot.asm -o $(BIN_DIR)/boot.bin
+
+emulate: boot
+	qemu-system-x86_64 -drive format=raw,file=$(BIN_DIR)/boot.bin
