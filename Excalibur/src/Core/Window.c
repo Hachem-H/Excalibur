@@ -152,7 +152,7 @@ Window* CreateWindow(const WindowOptions options)
     if (s_GLFWWindowCount == 0)
         if (!glfwInit())
         {
-            printf("[ERR]: GLFW could not be initialized.\n");
+            LOG_ERROR("GLFW could not be initialized.");
             free(window);
         }
 
