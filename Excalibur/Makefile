@@ -1,15 +1,17 @@
 CC = x86_64-w64-mingw32-gcc
 
 CC_FLAGS = -Wall -Wextra -Wno-unused-function -g
-LD_FLAGS = -lglfw3 -lgdi32 -lglad -lopengl32 
+LD_FLAGS = -lglfw3 -lgdi32 -lglad -lopengl32 -lcglm
 
 INCLUDE_FLAGS = -I../Vendor/glfw/include \
 				-I../Vendor/glad/include \
+				-I../Vendor/cglm/include \
 				-I../Vendor/stb/include \
 				-Isrc
 
 LIBRARY_FLAGS = -L../Vendor/glfw/lib \
-				-L../Vendor/glad/lib
+				-L../Vendor/glad/lib \
+				-L../Vendor/cglm/lib
 
 SRC_DIR = src
 BIN_DIR = ../bin

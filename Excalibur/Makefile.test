@@ -1,10 +1,13 @@
 CC = gcc
 
 CC_FLAGS = -Wall -Wextra -Wno-unused-function -g
-LD_FLAGS = -lglfw -lglad -lGL
+LD_FLAGS = -lglfw -lglad -lGL -lcglm
 
-INCLUDE_FLAGS = -I../Vendor/stb/include \
+INCLUDE_FLAGS = -I../Vendor/cglm/include \
+				-I../Vendor/stb/include  \
 				-Isrc
+
+LIBRARY_FLAGS = -L../Vendor/cglm/lib
 
 SRC_DIR = src
 BIN_DIR = ../bin

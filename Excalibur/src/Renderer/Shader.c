@@ -62,3 +62,55 @@ void UnBindShader(Shader* shader)
     glUseProgram(0);
     shader->isBound = false;
 }
+
+void SetShaderUniformMat4(Shader* shader, const char* key, mat4 value)
+{
+	int uniformLocation = glGetUniformLocation(shader->program, key);
+
+	if (!uniformLocation)
+	{
+        glUniformMatrix4fv(uniformLocation, 1, false, value[0]);
+		BindShader(shader);
+	}
+	else 
+        LOG_ERROR("Could Not Find Uniform: %s", key);
+}
+
+void SetShaderUniformVec2f(Shader* shader, const char* key, vec2 value)
+{
+	int uniformLocation = glGetUniformLocation(shader->program, key);
+
+	if (!uniformLocation)
+	{
+        glUniform2f(uniformLocation, value[0], value[1]);
+		BindShader(shader);
+	}
+	else 
+        LOG_ERROR("Could Not Find Uniform: %s", key);
+}
+
+void SetShaderUniformVec3f(Shader* shader, const char* key, vec3 value)
+{
+	int uniformLocation = glGetUniformLocation(shader->program, key);
+
+	if (!uniformLocation)
+	{
+        glUniform3f(uniformLocation, value[0], value[1], value[2]);
+		BindShader(shader);
+	}
+	else 
+        LOG_ERROR("Could Not Find Uniform: %s", key);
+}
+
+void SetShaderUniformVec4f(Shader* shader, const char* key, vec4 value)
+{
+	int uniformLocation = glGetUniformLocation(shader->program, key);
+
+	if (!uniformLocation)
+	{
+        glUniform4f(uniformLocation, value[0], value[1], value[2], value[3]);
+		BindShader(shader);
+	}
+	else 
+        LOG_ERROR("Could Not Find Uniform: %s", key);
+}
