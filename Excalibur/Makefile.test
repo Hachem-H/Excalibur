@@ -3,7 +3,8 @@ CC = gcc
 CC_FLAGS = -Wall -Wextra -Wno-unused-function -g
 LD_FLAGS = -lglfw -lglad -lGL
 
-INCLUDE_FLAGS = -Isrc
+INCLUDE_FLAGS = -I../Vendor/stb/include \
+				-Isrc
 
 SRC_DIR = src
 BIN_DIR = ../bin

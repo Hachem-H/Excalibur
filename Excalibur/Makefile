@@ -5,6 +5,7 @@ LD_FLAGS = -lglfw3 -lgdi32 -lglad -lopengl32
 
 INCLUDE_FLAGS = -I../Vendor/glfw/include \
 				-I../Vendor/glad/include \
+				-I../Vendor/stb/include \
 				-Isrc
 
 LIBRARY_FLAGS = -L../Vendor/glfw/lib \
