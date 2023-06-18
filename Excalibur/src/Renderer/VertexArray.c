@@ -21,6 +21,9 @@ void InitalizeVertexArray(VertexArray* vertexArray)
 void DeleteVertexArray(VertexArray* vertexArray)
 {
     glDeleteVertexArrays(1, &vertexArray->rendererID);
+    
+    arrfree(vertexArray->vertexBuffers);
+    arrfree(vertexArray->indexBuffers);
 }
 
 void BindVertexArray(VertexArray* vertexArray)
