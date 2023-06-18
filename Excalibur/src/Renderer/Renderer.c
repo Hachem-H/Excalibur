@@ -1,4 +1,7 @@
+#include <glad/glad.h>
+
 #include "Renderer.h"
+#include "Core/Application.h"
 
 #include <stb_ds.h>
 
@@ -9,14 +12,14 @@ const char* vertexShaderSource   = ""
     "#version 330 core\n"
     ""
     "layout (location = 0) in vec4 a_Position;"
-    "layout (location = 1) in vec4 a_Colour;"
+    "layout (location = 1) in vec4 a_Color;"
     ""
     "out vec4 OutColor;"
-    "uniform mat4 a_ModelViewProjection;"
+    "uniform mat4 u_ModelViewProjection;"
     ""
     "void main()"
     "{"
-    "   gl_Position = a_Position * u_MVP;"
+    "   gl_Position = a_Position * u_ModelViewProjection;"
     "   OutColor = a_Color;"
     "}";
 
@@ -30,9 +33,11 @@ const char* fragmentShaderSource = ""
     "   gl_FragColor = OutColor;"
     "}";
 
-void InitalizeRenderer()
+void InitializeRenderer()
 {
     Renderer* renderer = (Renderer*) malloc(sizeof(Renderer));
+
+    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
     InitializeShader(&renderer->shader, vertexShaderSource, fragmentShaderSource);
     InitializeOrthographicCamera(&renderer->camera);
@@ -44,13 +49,23 @@ void InitalizeRenderer()
     s_Renderer = renderer;
 }
 
-void DestoryRenderer()
+void DestroyRenderer()
 {
     DeleteShader(&s_Renderer->shader);
 
     arrfree(s_Renderer->renderData.vertices);
     arrfree(s_Renderer->renderData.indices);
     free(s_Renderer);
+}
+
+void SetRendererClearColor(float r, float g, float b)
+{
+    glClearColor(r, g, b, 1.0f);
+}
+
+void ClearRenderer()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void BeginRendering()

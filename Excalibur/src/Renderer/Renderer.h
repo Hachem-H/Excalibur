@@ -22,8 +22,11 @@ typedef struct Renderer
 
 Renderer* GetRenderer();
 
-void InitalizeRenderer();
-void DestoryRenderer();
+void InitializeRenderer();
+void DestroyRenderer();
+
+void SetRendererClearColor(float r, float g, float b);
+void ClearRenderer();
 
 void BeginRendering();
 void EndRendering();

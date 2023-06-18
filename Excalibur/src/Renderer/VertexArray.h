@@ -24,7 +24,7 @@ typedef struct VertexArray_t
     IndexBuffer* indexBuffers;
 } VertexArray;
 
-void InitalizeVertexArray(VertexArray* vertexArray);
+void InitializeVertexArray(VertexArray* vertexArray);
 void DeleteVertexArray(VertexArray* vertexArray);
 
 void BindVertexArray(VertexArray* vertexArray);

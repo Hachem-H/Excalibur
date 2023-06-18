@@ -6,6 +6,8 @@
 
 #include "Window.h"
 
+#include "Renderer/Renderer.h"
+
 #include "Events/Event.h"
 #include "Events/ApplicationEvent.h"
 

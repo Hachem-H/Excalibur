@@ -1,7 +1,7 @@
 CC = gcc
 
 CC_FLAGS = -Wall -Wextra -Wno-unused-function -g
-LD_FLAGS = -lglfw -lglad -lGL -lcglm
+LD_FLAGS = -lglfw -lglad -lGL -lcglm -lm
 
 INCLUDE_FLAGS = -I../Vendor/cglm/include \
 				-I../Vendor/stb/include  \

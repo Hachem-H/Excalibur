@@ -36,8 +36,10 @@ Application* CreateApplication()
     });
 
     application->isRunning = true;
-
     s_ApplicationInstance = application;
+
+    InitializeRenderer();
+
     return application;
 }
 
@@ -45,12 +47,16 @@ void RunApplication(Application* application)
 {
     while (application->isRunning)
     {
+        SetRendererClearColor(0.1f, 0.1f, 0.1f);
+        ClearRenderer();
+
         UpdateWindow(application->window);
     }
 }
 
 void DestroyApplication(Application* application)
 {
+    DestroyRenderer();
     ShutdownWindow(application->window);
     free(application);
 }
