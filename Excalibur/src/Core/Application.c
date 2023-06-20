@@ -17,7 +17,6 @@ void Application_OnEvent(void* application, Event* event)
 void Application_OnWindowClose(void* application, Event* event)
 {
     ((Application*) application)->isRunning = false;
-    
     (void)event;
 }
 
@@ -38,6 +37,11 @@ Application* CreateApplication()
     application->isRunning = true;
     s_ApplicationInstance = application;
 
+    application->playerPosition = (Vec2) 
+    {
+        -50, -50
+    };
+
     InitializeRenderer();
 
     return application;
@@ -50,9 +54,13 @@ void RunApplication(Application* application)
         SetRendererClearColor(0.1f, 0.1f, 0.1f);
         ClearRenderer();
 
-        DrawQuad((Rect){   0,    0, 150, 150}, (Vec4) {0.2, 0.3, 0.8, 1.0});
-        DrawQuad((Rect){ -50,  -50,  25,  25}, (Vec4) {0.8, 0.4, 0.2, 1.0});
-        DrawQuad((Rect){-200, -200, 100, 100}, (Vec4) {0.3, 0.8, 0.2, 1.0});
+        if (IsKeyPressed(KEY_W)) application->playerPosition.y += 0.05;
+        if (IsKeyPressed(KEY_S)) application->playerPosition.y -= 0.05;
+        if (IsKeyPressed(KEY_A)) application->playerPosition.x -= 0.05;
+        if (IsKeyPressed(KEY_D)) application->playerPosition.x += 0.05;
+
+        DrawQuad((Rect){application->playerPosition.x, application->playerPosition.y, 
+                        50, 50}, (Vec4) {0.3, 0.8, 0.2, 1.0});
 
         UpdateWindow(application->window);
     }

@@ -9,12 +9,13 @@
 #include "Renderer/Renderer.h"
 
 #include "Events/Event.h"
+#include "Events/Input.h"
 #include "Events/ApplicationEvent.h"
 
 typedef struct Application_t
 {
     bool isRunning;
-
+    Vec2 playerPosition;
     Window* window;
 } Application;
 
