@@ -50,6 +50,10 @@ void RunApplication(Application* application)
         SetRendererClearColor(0.1f, 0.1f, 0.1f);
         ClearRenderer();
 
+        DrawQuad((Rect){   0,    0, 150, 150}, (Vec4) {0.2, 0.3, 0.8, 1.0});
+        DrawQuad((Rect){ -50,  -50,  25,  25}, (Vec4) {0.8, 0.4, 0.2, 1.0});
+        DrawQuad((Rect){-200, -200, 100, 100}, (Vec4) {0.3, 0.8, 0.2, 1.0});
+
         UpdateWindow(application->window);
     }
 }

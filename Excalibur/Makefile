@@ -1,6 +1,6 @@
 CC = x86_64-w64-mingw32-gcc
 
-CC_FLAGS = -Wall -Wextra -Wno-unused-function -g
+CC_FLAGS = -Wall -Wextra -Wno-unused-function -Wno-missing-braces -g
 LD_FLAGS = -lglfw3 -lgdi32 -lglad -lopengl32 -lcglm
 
 INCLUDE_FLAGS = -I../Vendor/glfw/include \

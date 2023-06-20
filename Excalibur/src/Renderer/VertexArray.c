@@ -5,7 +5,7 @@
 
 #include <glad/glad.h>
 
-void InitalizeVertexArray(VertexArray* vertexArray)
+void InitializeVertexArray(VertexArray* vertexArray)
 {
     vertexArray->currentIndex = 0;
     vertexArray->isBound      = 1;

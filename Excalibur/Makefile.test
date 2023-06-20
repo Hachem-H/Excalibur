@@ -1,6 +1,6 @@
 CC = gcc
 
-CC_FLAGS = -Wall -Wextra -Wno-unused-function -g
+CC_FLAGS = -Wall -Wextra -Wno-unused-function -Wno-missing-braces -g
 LD_FLAGS = -lglfw -lglad -lGL -lcglm -lm
 
 INCLUDE_FLAGS = -I../Vendor/cglm/include \
@@ -15,7 +15,7 @@ OBJ_DIR = ../bin-int/Excalibur
 
 SOURCES = $(shell find $(SRC_DIR) -name '*.c')
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
-TARGET = $(BIN_DIR)/Excalibur.exe
+TARGET = $(BIN_DIR)/Excalibur
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CC_FLAGS) -c $< -o $@ $(INCLUDE_FLAGS)

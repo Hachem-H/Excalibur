@@ -66,14 +66,68 @@ void SetRendererClearColor(float r, float g, float b)
 void ClearRenderer()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    RenderData* renderData = &s_Renderer->renderData;
+
+    VertexArray vertexArray;
+    VertexBuffer vertexBuffer;
+    IndexBuffer indexBuffer;
+
+    InitializeVertexArray(&vertexArray);
+    InitializeVertexBufferFromData(&vertexBuffer, renderData->vertices, arrlen(renderData->vertices));
+    InitializeIndexBuffer(&indexBuffer, renderData->indices, arrlen(renderData->indices));
+
+    VertexBufferLayoutElement layouts[2] = {{2, false}, 
+                                            {4, false}};
+
+    SetVertexArrayLayout(&vertexArray, layouts, 2);
+    PushBuffersToVertexArray(&vertexArray, vertexBuffer, indexBuffer);
+
+    SetOrthographicCameraShader(&s_Renderer->camera, &s_Renderer->shader);
+    BindShader(&s_Renderer->shader);
+    BindVertexArray(&vertexArray);
+
+    glDrawElements(GL_TRIANGLES, arrlen(renderData->indices), GL_UNSIGNED_INT, NULL);
+
+    DeleteVertexBuffer(&vertexBuffer);
+    DeleteIndexBuffer(&indexBuffer);
+    DeleteVertexArray(&vertexArray);
+
+    arrfree(renderData->vertices);
+    arrfree(renderData->indices);
+    renderData->index = 0;
 }
 
-void BeginRendering()
-{
-    
-}
 
-void EndRendering()
+void DrawQuad(const Rect bounds, const Vec4 color)
 {
+    Renderer* renderer = GetRenderer();
 
+    uint32_t index = renderer->renderData.index;
+
+    Vertex vertices[4] = 
+    {
+        (Vertex) { .position = { bounds.x,          bounds.y},          .color = {color.r, color.g, color.b, color.a}},
+        (Vertex) { .position = { bounds.x,          bounds.y-bounds.h}, .color = {color.r, color.g, color.b, color.a}},
+        (Vertex) { .position = { bounds.x+bounds.w, bounds.y-bounds.h}, .color = {color.r, color.g, color.b, color.a}},
+        (Vertex) { .position = { bounds.x+bounds.w, bounds.y},          .color = {color.r, color.g, color.b, color.a}},
+    };
+
+    uint32_t indices[6] = 
+    {
+        index,
+        index + 1,
+        index + 2,
+        index + 2,
+        index + 3,
+        index,
+    };
+
+
+    for (int i = 0; i < 4; i++)
+        arrpush(renderer->renderData.vertices, vertices[i]);
+    for (int i = 0; i < 6; i++)
+        arrpush(renderer->renderData.indices, indices[i]);
+
+    renderer->renderData.index += 4;
 }

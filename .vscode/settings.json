@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "vertexarray.h": "c",
+        "application.h": "c",
+        "renderer.h": "c",
+        "orthographiccamera.h": "c",
+        "applicationevent.h": "c",
+        "vector.h": "c"
+    }
+}

@@ -5,6 +5,8 @@
 #include "Buffer.h"
 #include "Shader.h"
 
+#include "Ext/Vector.h"
+
 typedef struct RenderData_t
 {
     Vertex* vertices;
@@ -28,5 +30,4 @@ void DestroyRenderer();
 void SetRendererClearColor(float r, float g, float b);
 void ClearRenderer();
 
-void BeginRendering();
-void EndRendering();
+void DrawQuad(const Rect bounds, const Vec4 color);
