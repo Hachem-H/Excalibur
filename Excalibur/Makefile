@@ -1,6 +1,6 @@
 CC = x86_64-w64-mingw32-gcc
 
-CC_FLAGS = -Wall -Wextra -Wno-unused-function -Wno-missing-braces -g
+CC_FLAGS = -Wall -Wextra -Wno-unused-function -Wno-missing-braces
 LD_FLAGS = -lglfw3 -lgdi32 -lglad -lopengl32 -lcglm
 
 INCLUDE_FLAGS = -I../Vendor/glfw/include \
@@ -19,7 +19,15 @@ OBJ_DIR = ../bin-int/Excalibur
 
 SOURCES = $(shell find $(SRC_DIR) -name '*.c')
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
+
 TARGET = $(BIN_DIR)/Excalibur.exe
+RELEASE = 0
+
+ifeq ($(RELEASE),1)
+	CC_FLAGS += -O2
+else
+	CC_FLAGS += -g
+endif
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CC_FLAGS) -c $< -o $@ $(INCLUDE_FLAGS)
