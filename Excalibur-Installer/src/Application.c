@@ -6,6 +6,7 @@
 #include <comutil.h>
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #include "Binaries/ExcaliburBinary.h"
@@ -13,6 +14,8 @@
 
 #define WINDOW_WIDTH 450
 #define WINDOW_HEIGHT 138
+
+#define BUFFER_SIZE 4096
 
 static HWND installButton;
 static HWND closeButton;
@@ -51,7 +54,7 @@ static void CreateShortcut(const char* targetPath, const char* shortcutPath)
     WCHAR wideShortcutFilePath[MAX_PATH];
     MultiByteToWideChar(CP_UTF8, 0, shortcutFilePath, -1, wideShortcutFilePath, MAX_PATH);
 
-    pPersistFile->lpVtbl->Save(pPersistFile, wideShortcutFilePath, TRUE);
+    pPersistFile->lpVtbl->Save(pPersistFile, wideShortcutFilePath, true);
 
     pShellLink->lpVtbl->Release(pShellLink);
     pPersistFile->lpVtbl->Release(pPersistFile);
@@ -89,9 +92,26 @@ static void InstallBinary(HWND windowHandle)
 
     strcat(pathBuffer, "\\Excalibur.exe");
     FILE* binary = fopen(pathBuffer, "wb");
-    fwrite(bin_Excalibur_exe, sizeof(unsigned char), bin_Excalibur_exe_len, binary);
-    fclose(binary);
     
+    unsigned char buffer[BUFFER_SIZE];
+    uint32_t remainingBytes = bin_Excalibur_exe_len;
+    uint32_t currentIndex = 0;
+
+    while (remainingBytes > 0)
+    {
+        uint32_t bytesToWrite = (remainingBytes < BUFFER_SIZE) ? remainingBytes : BUFFER_SIZE;
+        memcpy(buffer, &bin_Excalibur_exe[currentIndex], bytesToWrite);
+        fwrite(buffer, sizeof(unsigned char), bytesToWrite, binary);
+
+        currentIndex += bytesToWrite;
+        remainingBytes -= bytesToWrite;
+
+        int progress = (int)(((float)currentIndex / bin_Excalibur_exe_len) * 100);
+        SendMessage(progressBar, PBM_SETPOS, progress, 0);
+    }
+
+    fclose(binary);
+
     if (createShortcut) 
         CreateShortcut(pathBuffer, "Excalibur");
 
@@ -131,12 +151,24 @@ LRESULT CALLBACK WindowProc(HWND windowHandle, UINT message, WPARAM wordParam, L
                 {
                     HWND clickedControl = (HWND)longParam;
 
-                    if (clickedControl == shortcutCheckbox) { }
-                    else if (clickedControl == launchCheckbox) { }
+                    if (clickedControl == shortcutCheckbox)
+                    {
+                        createShortcut = !createShortcut;
+                        SendMessage(shortcutCheckbox, BM_SETCHECK, createShortcut, 0);
+                    }
+                    else if (clickedControl == launchCheckbox)
+                    {
+                        launchAfterInstall = !launchAfterInstall;
+                        SendMessage(launchCheckbox, BM_SETCHECK, launchAfterInstall, 0);
+                    }
                     else if (clickedControl == installButton)
                     {
                         GetWindowText(pathTextfield, pathBuffer, MAX_PATH);
                         InstallBinary(windowHandle);
+                    }
+                    else if (clickedControl == closeButton)
+                    {
+                        PostMessage(windowHandle, WM_CLOSE, 0, 0);
                     }
                 } break;
             }
@@ -151,9 +183,14 @@ closeWindow:
 
 int WINAPI WinMain(HINSTANCE instanceHandle, HINSTANCE previousInstanceHandle, LPSTR argv, int argc)
 {
+    INITCOMMONCONTROLSEX commonControlsEx;
+    commonControlsEx.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    commonControlsEx.dwICC  = ICC_PROGRESS_CLASS;
+    InitCommonControlsEx(&commonControlsEx);
+
     WNDCLASS windowClass = {};
-    windowClass.lpfnWndProc = WindowProc;
-    windowClass.hInstance = instanceHandle;
+    windowClass.lpfnWndProc   = WindowProc;
+    windowClass.hInstance     = instanceHandle;
     windowClass.lpszClassName = "Excalibur";
     RegisterClass(&windowClass);
 
@@ -163,37 +200,31 @@ int WINAPI WinMain(HINSTANCE instanceHandle, HINSTANCE previousInstanceHandle, L
     if (windowHandle == NULL)
         return 0;
 
-    pathTextfield = CreateWindowEx(0, "EDIT", "C:\\Program Files\\Excalibur",
-                                   WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-                                   8, 8, 265, 23, windowHandle, NULL, instanceHandle, NULL);
-
-    progressBar = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE,
-                                 8, 37, 265, 25, windowHandle, NULL, instanceHandle, NULL);
-
-    installButton = CreateWindow("BUTTON", "Install", WS_CHILD | WS_VISIBLE,
-                                 8, 68, 75, 25, windowHandle, NULL, instanceHandle, NULL);
-
-    closeButton = CreateWindow("BUTTON", "Close", WS_CHILD | WS_VISIBLE,
-                               89, 68, 75, 25, windowHandle, NULL, instanceHandle, NULL);
-
+    pathTextfield    = CreateWindowEx(0, "EDIT", "C:\\Program Files\\Excalibur",
+                                      WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+                                      8, 8, 265, 23, windowHandle, NULL, instanceHandle, NULL);
+    progressBar      = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE,
+                                      8, 37, 265, 25, windowHandle, NULL, instanceHandle, NULL);
+    installButton    = CreateWindow("BUTTON", "Install", WS_CHILD | WS_VISIBLE,
+                                    8, 68, 75, 25, windowHandle, NULL, instanceHandle, NULL);
+    closeButton      = CreateWindow("BUTTON", "Close", WS_CHILD | WS_VISIBLE,
+                                    89, 68, 75, 25, windowHandle, NULL, instanceHandle, NULL);
     shortcutCheckbox = CreateWindow("BUTTON", "Create Desktop shortcut", WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
                                     278, 14, 150, 17, windowHandle, NULL, instanceHandle, NULL);
+    launchCheckbox   = CreateWindow("BUTTON", "Launch after install", WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
+                                    278, 45, 150, 17, windowHandle, NULL, instanceHandle, NULL);
+    defaultFont      = CreateFont(16, 0, 0, 0, FW_NORMAL, false, false, false, 
+                                  DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                  DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
 
-    launchCheckbox = CreateWindow("BUTTON", "Launch after install", WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
-                                  278, 45, 150, 17, windowHandle, NULL, instanceHandle, NULL);
+    SendMessage(shortcutCheckbox, WM_SETFONT, (WPARAM)defaultFont, 1);
+    SendMessage(launchCheckbox,   WM_SETFONT, (WPARAM)defaultFont, 1);
+    SendMessage(pathTextfield,    WM_SETFONT, (WPARAM)defaultFont, 1);
+    SendMessage(installButton,    WM_SETFONT, (WPARAM)defaultFont, 1);
+    SendMessage(closeButton,      WM_SETFONT, (WPARAM)defaultFont, 1);
 
-    defaultFont = CreateFont(16, 0, 0, 0, FW_NORMAL, false, false, false, 
-                             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                             DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
-
-    SendMessage(shortcutCheckbox, WM_SETFONT, (WPARAM)defaultFont, true);
-    SendMessage(launchCheckbox, WM_SETFONT, (WPARAM)defaultFont, true);
-    SendMessage(pathTextfield, WM_SETFONT, (WPARAM)defaultFont, true);
-    SendMessage(installButton, WM_SETFONT, (WPARAM)defaultFont, true);
-    SendMessage(closeButton, WM_SETFONT, (WPARAM)defaultFont, true);
-
-    SendMessage(shortcutCheckbox, BM_SETCHECK, BST_CHECKED, false);
-    SendMessage(launchCheckbox, BM_SETCHECK, BST_CHECKED, false);
+    SendMessage(launchCheckbox,   BM_SETCHECK, launchAfterInstall, 0);
+    SendMessage(shortcutCheckbox, BM_SETCHECK, createShortcut,     0);
 
     ShowWindow(windowHandle, argc);
     

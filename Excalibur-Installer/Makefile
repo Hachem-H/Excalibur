@@ -1,7 +1,7 @@
 CC = x86_64-w64-mingw32-gcc
 
 CC_FLAGS = -Wall -Wextra
-LD_FLAGS = -static-libgcc -static -lgdi32 -lole32 -lshell32 -luuid
+LD_FLAGS = -static-libgcc -static -lgdi32 -lole32 -lshell32 -lcomctl32 -luuid
 
 SRC_DIR = src
 BIN_DIR = ../bin
@@ -13,7 +13,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 TARGET = $(BIN_DIR)/Excalibur-Installer.exe
 
 RELEASE = 0
-ATTACK = 1
+ATTACK = 0
 
 ifeq ($(ATTACK),1)
 	CC_FLAGS += -DEX_ATTACK
