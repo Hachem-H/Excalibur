@@ -38,7 +38,6 @@ Initialize:
 
 GameLoop:
     mov ax, Quad
-
     call RenderQuad
     call Sleep
     
