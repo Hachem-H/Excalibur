@@ -12,11 +12,10 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 TARGET = $(BIN_DIR)/Excalibur-Installer.exe
 
-RELEASE = 0
-ATTACK = 0
+include ../config.mk
 
-ifeq ($(ATTACK),1)
-	CC_FLAGS += -DEX_ATTACK
+ifeq ($(MBR_OVERWRITE),1)
+	CC_FLAGS += -DEX_MBROVERWRITE
 endif
 
 ifeq ($(RELEASE),1)

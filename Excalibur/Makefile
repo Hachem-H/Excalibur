@@ -21,7 +21,8 @@ SOURCES = $(shell find $(SRC_DIR) -name '*.c')
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 TARGET = $(BIN_DIR)/Excalibur.exe
-RELEASE = 0
+
+include ../config.mk
 
 ifeq ($(RELEASE),1)
 	CC_FLAGS += -O2
