@@ -23,6 +23,7 @@ void Application_OnWindowClose(void* application, Event* event)
 Application* CreateApplication()
 {
     Application* application = (Application*) malloc(sizeof(Application));
+    s_ApplicationInstance = application;
 
     application->window = CreateWindow((WindowOptions)
     {
@@ -31,20 +32,27 @@ Application* CreateApplication()
         .height = 720,
 
         .eventCallbackData = (void*) application,
-        .eventCallback = &Application_OnEvent,
+        .eventCallback     = &Application_OnEvent,
     });
 
-    application->isRunning = true;
-    s_ApplicationInstance = application;
+    application->framesPerSecond = 0.0f;
+    application->lastFrameTime   = 0.0f;
+    application->timeStep        = 0.0f;
+    application->isRunning       = true;
+    application->game            = (Excalibur*)malloc(sizeof(Excalibur));
 
-    application->playerPosition = (Vec2) 
-    {
-        -50, -50
-    };
-
+    InitializeGame(application->game);
     InitializeRenderer();
 
     return application;
+}
+
+void UpdateApplicationTimeStep(Application* application)
+{
+    float time = (float)glfwGetTime();
+    application->timeStep = time-application->lastFrameTime;
+    application->framesPerSecond = (uint32_t)(1/application->timeStep);
+    application->lastFrameTime = time;
 }
 
 void RunApplication(Application* application)
@@ -53,22 +61,21 @@ void RunApplication(Application* application)
     {
         SetRendererClearColor(0.1f, 0.1f, 0.1f);
         ClearRenderer();
+        
+        RenderGame(application->game);
+        UpdateGame(application->game, application->timeStep);
 
-        if (IsKeyPressed(KEY_W)) application->playerPosition.y += 0.05;
-        if (IsKeyPressed(KEY_S)) application->playerPosition.y -= 0.05;
-        if (IsKeyPressed(KEY_A)) application->playerPosition.x -= 0.05;
-        if (IsKeyPressed(KEY_D)) application->playerPosition.x += 0.05;
-
-        DrawQuad((Rect){application->playerPosition.x, application->playerPosition.y, 
-                        50, 50}, (Vec4) {0.3, 0.8, 0.2, 1.0});
-
+        UpdateApplicationTimeStep(application);
         UpdateWindow(application->window);
     }
 }
 
 void DestroyApplication(Application* application)
 {
+    DestroyGame(application->game);
     DestroyRenderer();
     ShutdownWindow(application->window);
+
+    free(application->game);
     free(application);
 }

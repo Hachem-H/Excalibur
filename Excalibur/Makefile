@@ -46,3 +46,5 @@ $(BIN_DIR):
 
 .PHONY: $(OBJ_DIR)
 all: $(OBJ_DIR) $(TARGET)
+clean:
+	cd ../ && $(MAKE) clean
