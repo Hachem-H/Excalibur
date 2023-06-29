@@ -3,20 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef uint8_t EventType;
-typedef uint8_t EventCategory;
-
-#define __CONCATENATE(x, y) x##y
-
-#define EVENT_CLASS_TYPE(type) \
-	static EventType __##type##_GetType() { return EventType_##type; }
-
-#define EVENT_CLASS_CATEGORY(type, category) \
-	static EventCategory __##type##_GetCategoryFlags() { return category; }
-
-#define SET_EVENT(name, type)                            \
-	name.GetType = __##type##_GetType;                   \
-	name.GetCategoryFlags = __##type##_GetCategoryFlags; \
+#include "MouseCode.h"
+#include "KeyCode.h"
 
 typedef enum EVENT_TYPE_t
 {
@@ -40,7 +28,7 @@ typedef enum EVENT_TYPE_t
 	EventType_MouseButtonReleased,
 	EventType_MouseMoved,
 	EventType_MouseScrolled
-} EVENT_TYPE;
+} EventType;
 
 typedef enum EVENT_CATEGORY_t
 {
@@ -51,34 +39,40 @@ typedef enum EVENT_CATEGORY_t
     EventCategory_Keyboard    = 3 << 0,
     EventCategory_Mouse       = 4 << 0,
     EventCategory_MouseButton = 5 << 0,
-} EVENT_CATEGORY;
+} EventCategory;
+
+typedef struct EventData_t
+{
+    int width;
+    int height;
+
+    float mouseX;
+    float mouseY;
+    float xOffset;
+    float yOffset;
+
+    uint32_t keyRepeatCount;
+    MouseCode mouseButton;
+    KeyCode keyCode;
+} EventData;
 
 typedef struct Event_t
 {
     bool handled;
-
-    void* eventData;
-    EventType(*GetType)();
-    EventCategory(*GetCategoryFlags)();
+    
+    EventData data;
+    EventType type;
+    EventCategory category;
 } Event;
 
-typedef struct EventDispatcher_t
+static bool DispatchEvent(Event* event, EventType type, bool (*callback)(Event*, void*), void* data)
 {
-    Event* event;
-} EventDispatcher;
-
-static bool EventInCategory(const Event* event, const EventCategory category) 
-{ 
-    return event->GetCategoryFlags(event) & category; 
-}
-
-static bool DispatchEvent(EventDispatcher* dispatcher, void* eventData, Event* event, void* callback(void* eventData, Event* event))
-{
-	if (dispatcher->event->GetType(dispatcher->event) == event->GetType(event))
-	{
-		dispatcher->event->handled = callback(eventData, event);
-		return true;
-	}
+	if (!event->handled)
+        if (event->type == type)
+        {
+            event->handled = callback(event, data);
+            return event->handled;
+        }
 
 	return false;
 }

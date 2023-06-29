@@ -5,19 +5,16 @@ Application* GetApplication() { return s_ApplicationInstance; }
 
 void Application_OnEvent(void* application, Event* event)
 {
-    EventDispatcher eventDispatcher = { event };
-
-    Event windowCloseEvent;
-    windowCloseEvent.eventData = event->eventData;
-    SET_EVENT(windowCloseEvent, WindowClose);
-
-    DispatchEvent(&eventDispatcher, application, &windowCloseEvent, (void*) &Application_OnWindowClose);
+    DispatchEvent(event, EventType_WindowClose, &Application_OnWindowClose, application);
 }
 
-void Application_OnWindowClose(void* application, Event* event)
+bool Application_OnWindowClose(Event* event, void* application)
 {
-    ((Application*) application)->isRunning = false;
+    (void)application;
     (void)event;
+    
+    s_ApplicationInstance->isRunning = false;
+    return true;
 }
 
 Application* CreateApplication()

@@ -8,64 +8,43 @@ static void s_SizeCallback(GLFWwindow* window, int width, int height)
     windowOptions->width = width;
     windowOptions->height = height;
 
-    WindowResizeEvent eventData;
-    eventData.width = width;
-    eventData.height = height;
-
-    Event event;
-    event.eventData = (void*)&eventData;
-    SET_EVENT(event, WindowResize);
+    Event event = { .handled  = false,
+                    .type     = EventType_WindowResize,
+                    .category = EventCategory_Application };
+    event.data.width  = width;
+    event.data.height = height;
 
     windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
 }
 
 static void s_CloseCallback(GLFWwindow* window)
 {
-    WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
-
-    Event event; 
-    SET_EVENT(event, WindowClose);
-
-    windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
+	WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
+	Event event = { .handled  = false,
+                    .type     = EventType_WindowClose,
+                    .category = EventCategory_Application };
+	windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
 }
 
 static void s_KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
-    Event event;
+	WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
+	
+	Event event = { .handled  = false,
+                    .category = EventCategory_Input 
+                              | EventCategory_Keyboard }; 
+    event.data.keyCode = key;
 
-    switch (action)
-    {
-    case GLFW_PRESS:
-        {
-            KeyPressedEvent eventData;
-            eventData.keyCode = key;
-            eventData.repeatCount = 0;
+	switch (action)
+	{
+	case GLFW_PRESS:   { event.data.keyRepeatCount = 0;
+					     event.type = EventType_KeyPressed;  break; }
+	case GLFW_RELEASE: { event.type = EventType_KeyReleased; break; }
+	case GLFW_REPEAT:  { event.data.keyRepeatCount = 1;
+				 		 event.type = EventType_KeyPressed;  break; }
+	}
 
-            event.eventData = (void*) &eventData;
-            SET_EVENT(event, KeyPressed);
-        } break;
-
-    case GLFW_RELEASE:
-        {
-            KeyReleasedEvent eventData;
-            eventData.keyCode = key;
-            event.eventData = (void*) &eventData;
-            SET_EVENT(event, KeyReleased);
-        } break;
-    
-    case GLFW_REPEAT:
-        {
-            KeyPressedEvent eventData;
-            eventData.keyCode = key;
-            eventData.repeatCount = 1;
-
-            event.eventData = (void*) &eventData;
-            SET_EVENT(event, KeyPressed);
-        } break;
-    }
-
-    windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
+	windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
 
     (void)scancode;
     (void)mods;
@@ -73,76 +52,56 @@ static void s_KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 static void s_TypedCallback(GLFWwindow* window, uint32_t code)
 {
-    WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
-
-    KeyTypedEvent eventData;
-    eventData.keyCode = code;
-
-    Event event;
-    event.eventData = (void*) &eventData;
-    SET_EVENT(event, KeyTyped);
-
-    windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
+	WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
+	Event event = { .handled  = false,
+                    .type     = EventType_KeyTyped,
+                    .category = EventCategory_Input 
+                              | EventCategory_Keyboard }; 
+    event.data.keyCode = code;
+	windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
 }
 
 static void s_MouseCallback(GLFWwindow* window, int button, int action, int mods)
 {
-    WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
-    Event event;
+	WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
+	Event event = { .handled = false,
+                    .category = EventCategory_Input 
+                               | EventCategory_Mouse
+                               | EventCategory_MouseButton }; 
+    event.data.mouseButton = button;
 
-    switch (action)
-    {
-    case GLFW_PRESS:
-        {
-            MouseButtonPressedEvent eventData;
-            eventData.button = button;
+	switch (action)
+	{
+	case GLFW_PRESS:   { event.type = EventType_MouseButtonPressed;  break; }
+	case GLFW_RELEASE: { event.type = EventType_MouseButtonReleased; break; }
+	}
 
-            event.eventData = (void*) &eventData;
-            SET_EVENT(event, MouseButtonPressed);
-        } break;
-
-    case GLFW_RELEASE:
-        {
-            MouseButtonReleasedEvent eventData;
-            eventData.button = button;
-
-            event.eventData = (void*) &eventData;
-            SET_EVENT(event, MouseButtonReleased);
-        } break;
-    }
-
-    windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
+	windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
     (void) mods;
 }
 
 static void s_ScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
-	WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
-	
-	MouseScrolledEvent eventData;
-	eventData.offsetX = (float)xOffset;
-	eventData.offsetY = (float)yOffset;
-
-	Event event;
-	event.eventData = (void*)&eventData;
-	SET_EVENT(event, MouseScrolled);
-
+	WindowOptions* windowOptions = (WindowOptions*)glfwGetWindowUserPointer(window);
+	Event event = { .handled = false,
+                    .type = EventType_MouseScrolled,
+                    .category = EventCategory_Mouse 
+                              | EventCategory_Input };
+	event.data.xOffset = (float)xOffset;
+	event.data.yOffset = (float)yOffset;
 	windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
 }
 
 static void s_MouseMovedCallback(GLFWwindow* window, double x, double y)
 {
-   	WindowOptions* windowOptions = (WindowOptions*) glfwGetWindowUserPointer(window);
-	
-	MouseMovedEvent eventData;
-	eventData.x = (float)x;
-	eventData.y = (float)y;
-
-	Event event;
-	event.eventData = (void*)&eventData;
-	SET_EVENT(event, MouseMoved);
-
-	windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
+	WindowOptions* windowOptions = (WindowOptions*)glfwGetWindowUserPointer(window);
+    Event event = { .handled = false,
+                    .type = EventType_MouseMoved,
+                    .category = EventCategory_Mouse 
+                              | EventCategory_Input }; 
+    event.data.mouseX = (float)x;
+    event.data.mouseY = (float)y;
+    windowOptions->eventCallback(windowOptions->eventCallbackData, &event);
 }
 
 Window* CreateWindow(const WindowOptions options)

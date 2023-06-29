@@ -8,9 +8,7 @@
 #include "Excalibur.h"
 
 #include "Renderer/Renderer.h"
-
 #include "Events/Event.h"
-#include "Events/ApplicationEvent.h"
 
 typedef struct Application_t
 {
@@ -31,5 +29,5 @@ void RunApplication(Application* application);
 void UpdateApplicationTimeStep(Application* application);
 void DestroyApplication(Application* application);
 
-void Application_OnWindowClose(void* application, Event* event);
+bool Application_OnWindowClose(Event* event, void* application);
 void Application_OnEvent(void* application, Event* event);
