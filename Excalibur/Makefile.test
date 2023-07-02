@@ -5,8 +5,7 @@ LD_FLAGS = -lglfw -lglad -lGL -lcglm -lm
 
 INCLUDE_FLAGS = -I../Vendor/cglm/include \
 				-I../Vendor/stb/include  \
-				-Isrc
-
+				-Isrc                    \
 LIBRARY_FLAGS = -L../Vendor/cglm/lib
 
 SRC_DIR = src
@@ -18,8 +17,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 TARGET = $(BIN_DIR)/Excalibur
 
-include ../config.mk
-
+RELEASE := $(shell echo $(RELEASE))
 ifeq ($(RELEASE),1)
 	CC_FLAGS += -O2
 else

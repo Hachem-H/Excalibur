@@ -6,6 +6,9 @@ LOG_DIR = Excalibur-KeyLog
 INS_DIR = Excalibur-Installer
 ENC_DIR = $(INS_DIR)/src/Binaries
 
+RELEASE = 0
+export RELEASE
+
 all: installer
 .PHONY: boot
 
@@ -23,9 +26,10 @@ keylogger:
 	cd $(LOG_DIR) && $(MAKE)
 	xxd -i $(BIN_DIR)/Excalibur-KeyLog.exe > $(ENC_DIR)/KeyLogBinary.h
 
-installer: boot keylogger excalibur
+installer: boot excalibur keylogger
 	cd $(INS_DIR) && $(MAKE)
 
 clean:
 	rm -rf $(BIN_DIR)
 	rm -rf $(OBJ_DIR)
+	rm -rf $(ENC_DIR)/*

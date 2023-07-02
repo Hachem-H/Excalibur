@@ -1,7 +1,10 @@
 CC = x86_64-w64-mingw32-gcc
 
 CC_FLAGS = -Wall -Wextra
-LD_FLAGS = -static-libgcc -static -lgdi32 -lole32 -lshell32 -lcomctl32 -luuid
+LD_FLAGS = -static-libgcc -static -lgdi32 \
+		   -lole32 -lshell32 -lcomctl32 -luuid
+
+INCLUDE_FLAGS = -I..
 
 SRC_DIR = src
 BIN_DIR = ../bin
@@ -12,16 +15,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 TARGET = $(BIN_DIR)/Excalibur-Installer.exe
 
-include ../config.mk
-
-ifeq ($(MBR_OVERWRITE),1)
-	CC_FLAGS += -DEX_MBROVERWRITE
-endif
-
-ifeq ($(KEYLOGGER),1)
-	CC_FLAGS += -DEX_KEYLOGGER
-endif
-
+RELEASE := $(shell echo $(RELEASE))
 ifeq ($(RELEASE),1)
 	CC_FLAGS += -O2
 else
@@ -36,7 +30,7 @@ EXCALIBUR_OBJ = $(OBJ_DIR)/Excalibur-Installer.o
 all: $(EXCALIBUR_OBJ) $(TARGET)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CC_FLAGS) -c $< -o $@ $(LD_FLAGS)
+	$(CC) $(CC_FLAGS) -c $< -o $@ $(INCLUDE_FLAGS)
 
 $(EXCALIBUR_OBJ): $(EXCALIBUR_RC)
 	x86_64-w64-mingw32-windres $(EXCALIBUR_RC) -o $(EXCALIBUR_OBJ)

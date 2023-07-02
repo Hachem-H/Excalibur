@@ -1,14 +1,14 @@
 CC = x86_64-w64-mingw32-gcc
 
 CC_FLAGS = -Wall -Wextra -Wno-unused-function -Wno-missing-braces
-LD_FLAGS = -lglfw3 -lgdi32 -lglad -lopengl32 -lcglm
+LD_FLAGS = -lglfw3 -lgdi32 -lglad \
+		   -lopengl32 -lcglm
 
 INCLUDE_FLAGS = -I../Vendor/glfw/include \
 				-I../Vendor/glad/include \
 				-I../Vendor/cglm/include \
 				-I../Vendor/stb/include \
 				-Isrc
-
 LIBRARY_FLAGS = -L../Vendor/glfw/lib \
 				-L../Vendor/glad/lib \
 				-L../Vendor/cglm/lib
@@ -22,8 +22,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 TARGET = $(BIN_DIR)/Excalibur.exe
 
-include ../config.mk
-
+RELEASE := $(shell echo $(RELEASE))
 ifeq ($(RELEASE),1)
 	CC_FLAGS += -O2
 else

