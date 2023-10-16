@@ -14,8 +14,6 @@ The project is divided into several modules, each serving specific purposes:
 - Excalibur-KeyLogger: A keylogger that reports back at every shutdown and launches at startup, sending data to a predefined IP address located in `config.h`.
 - Excalibur-HookAPI: A Task Manager `DLL` hook that makes the Keylogger invisible in the Task Manager. Note that this module is not yet implemented.
 
-_**NOTE**: The repository is still a work in progress, with the game and `Excalibur-HookAPI` yet to be fully developed._
-
 ## OpenGL Support for Legacy and Virtual Machines
 To enable older machines and virtual machines without a modern OpenGL version, you can copy the `opengl32.dll` file from the`Vendor/` folder and paste it into the installation directory (usually located at `C:\Program Files\Excalibur`). By doing so, you ensure that the required `opengl32.dll` file is present in the installation directory, enabling the application to function correctly on these machines. In a future update, the `dll` will be automatically installed.
 
@@ -35,3 +33,6 @@ By accessing and using this code, you acknowledge that:
 Please use this code responsibly and only for educational purposes. If you discover any vulnerabilities or improvements, kindly report them to the author(s) to help enhance its educational value.
 
 By using this code, you agree to these terms and conditions.
+
+## Note
+The repository is still a work in progress, with the game and `Excalibur-HookAPI` yet to be fully developed._ My development progress fluctuates significantly due to the simultaneous management of multiple ongoing projects, spanning both computer science-related and unrelated domains.
